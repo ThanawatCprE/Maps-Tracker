@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Maps Tracker</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 500px;
+        width: 100%;
+       }
+    </style>
+  </head>
+  <body>
+  <h3>Maps Tracker</h3>
+    <div id="map"></div>
+    <br>
+    <button onclick="start()">Start</button>
+    <button onclick="stop()">Stop</button>
+    <p id="status"></p>
+
+    <script>
+      // Note: This example requires that you consent to location sharing when
+      // prompted by your browser. If you see the error "The Geolocation service
+      // failed.", it means you probably did not give permission for the browser to
+      // locate you.
+      var map, infoWindow;
+      var allposition = [];
+      var markerNumber = 0;
+      var intervalgetpos;
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 13.736717, lng: 100.523186},
+          zoom: 17
+        });
+        infoWindow = new google.maps.InfoWindow;
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {// get latitude and longitude
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            infoWindow.setPosition(pos);
+            infoWindow.setContent('You are here.');
+            infoWindow.open(map);
+            map.setCenter(pos);
+            console.log(pos.lat);
+            console.log(pos.lng);
+          }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+        //findPosition();
+      }
+        // Try HTML5 geolocation.
+      function findPosition(){
+        markerNumber = markerNumber+1;
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {// get latitude and longitude
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            var time = new Date().toLocaleTimeString(); //get time of current position
+            var currentData = {
+              lat : pos.lat,
+              lng : pos.lng,
+              time : time
+            }
+            var marker = new google.maps.Marker({
+              position: pos,
+              map: map,
+              title : time,
+              label: {
+                color: 'black',
+                fontWeight: 'bold',
+                text: markerNumber.toString()
+              }
+            });
+            allposition.push(pos);  //keep all posion to route path
+
+            map.setCenter(pos);
+            console.log(pos.lat);
+            console.log(pos.lng);
+            console.log(time);
+            console.log(currentData);
+            console.log(allposition);
+          }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+      }
+      
+
+      function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: The Geolocation service failed.' :
+                              'Error: Your browser doesn\'t support geolocation.');
+        infoWindow.open(map);
+      }
+
+      function start(){  //start track
+        document.getElementById("status").innerHTML = "Start Tracking!";
+        findPosition();
+        intervalgetpos = setInterval(findPosition, 10000);
+      }
+      function stop(){ //stop track
+        document.getElementById("status").innerHTML = "Stopped Tracking!";
+        document.getElementById("status").innerHTML += "<br><i>Hint : Please reload before start again</i>";
+        console.log(allposition);
+         var routePath = new google.maps.Polyline({
+              path: allposition,
+              geodesic: true,
+              strokeColor: '#0099ff',
+              strokeOpacity: 1.0,
+              strokeWeight: 4
+              
+            });
+            console.log(allposition);
+            routePath.setMap(map);
+            clearInterval(intervalgetpos);
+      }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD2YcOWIWlg1ZthtS3XPzhL6OSmiFOrNYg&callback=initMap">
+    </script>
+  </body>
+</html>
