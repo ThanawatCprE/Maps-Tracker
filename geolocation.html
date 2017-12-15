@@ -14,12 +14,15 @@
     </style>
   </head>
   <body>
-  <h3>Maps Tracker</h3>
+  <h2 align="center">Maps Tracker</h2>
     <div id="map"></div>
     <br>
     <button onclick="start()">Start</button>
     <button onclick="stop()">Stop</button>
+    <button onclick="show()">Show Result</button>
+    <button onclick="hide()">Hide Result</button>
     <p id="status"></p>
+    <p id="result"></p>
 
     <script>
       // Note: This example requires that you consent to location sharing when
@@ -30,7 +33,7 @@
       var allposition = [];
       var markerNumber = 0;
       var intervalgetpos;
-
+      var bigData = [];
       function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 13.736717, lng: 100.523186},
@@ -47,8 +50,8 @@
             infoWindow.setContent('You are here.');
             infoWindow.open(map);
             map.setCenter(pos);
-            console.log(pos.lat);
-            console.log(pos.lng);
+            console.log("init lat: "+pos.lat);
+            console.log("init lng: "+pos.lng);
           }, function() {
             handleLocationError(true, infoWindow, map.getCenter());
           });
@@ -71,8 +74,10 @@
             var currentData = {
               lat : pos.lat,
               lng : pos.lng,
-              time : time
+              time : time,
+              acc : position.coords.accuracy
             }
+            bigData.push(currentData);
             var marker = new google.maps.Marker({
               position: pos,
               map: map,
@@ -86,11 +91,14 @@
             allposition.push(pos);  //keep all posion to route path
 
             map.setCenter(pos);
-            console.log(pos.lat);
-            console.log(pos.lng);
-            console.log(time);
-            console.log(currentData);
-            console.log(allposition);
+            console.log("Position : "+markerNumber);
+            console.log("current lat: "+pos.lat);
+            console.log("current lng: "+pos.lng);
+            console.log("current time: "+time);
+            console.log("current acc: "+currentData.acc);
+            //console.log(currentData);
+            console.log("all lat and lng : "+allposition.length);
+            console.log("all data: "+bigData.length);
           }, function() {
             handleLocationError(true, infoWindow, map.getCenter());
           });
@@ -112,12 +120,11 @@
       function start(){  //start track
         document.getElementById("status").innerHTML = "Start Tracking!";
         findPosition();
-        intervalgetpos = setInterval(findPosition, 10000);
+        intervalgetpos = setInterval(findPosition, 5000);
       }
       function stop(){ //stop track
         document.getElementById("status").innerHTML = "Stopped Tracking!";
         document.getElementById("status").innerHTML += "<br><i>Hint : Please reload before start again</i>";
-        console.log(allposition);
          var routePath = new google.maps.Polyline({
               path: allposition,
               geodesic: true,
@@ -126,9 +133,20 @@
               strokeWeight: 4
               
             });
-            console.log(allposition);
+            console.log(bigData);
             routePath.setMap(map);
             clearInterval(intervalgetpos);
+      }
+      function show(){
+        for (var i = 0; i < bigData.length; i++) {
+          document.getElementById("result").innerHTML += (i+1)+".";
+          document.getElementById("result").innerHTML += "Latitude:"+bigData[i].lat+"  Longitude:"+bigData[i].lng;
+          document.getElementById("result").innerHTML += "  Time:"+bigData[i].time+"  Accuracy:"+bigData[i].acc;
+          document.getElementById("result").innerHTML += "<br>";
+        }
+      }
+      function hide(){
+        document.getElementById("result").innerHTML = "";
       }
     </script>
     <script async defer
